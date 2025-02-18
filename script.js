@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector(".container").style.background = selectedColor;
         document.querySelector("h1").style.color = selectedColor;
         document.querySelector("h2").style.color = selectedColor;
+        
+        // Atualizar a cor do fundo do seletor para melhor visibilidade
+        colorPicker.style.background = selectedColor;
+        colorPicker.style.border = "2px solid #fff";
     });
 
     // Gerar PDF do portfólio
