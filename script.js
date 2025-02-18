@@ -9,3 +9,22 @@ function toggleDarkMode() {
         container.style.color = "#f4f4f4";
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const colorPicker = document.getElementById("themeColor");
+    const downloadButton = document.getElementById("downloadResume");
+
+    // Alterar o tema ao escolher uma nova cor
+    colorPicker.addEventListener("input", function(event) {
+        let selectedColor = event.target.value;
+        document.documentElement.style.setProperty('--primary-color', selectedColor);
+        document.querySelector(".container").style.background = selectedColor;
+        document.querySelector("h1").style.color = selectedColor;
+        document.querySelector("h2").style.color = selectedColor;
+    });
+
+    // Gerar PDF do portfólio
+    downloadButton.addEventListener("click", function() {
+        window.open('Leonardo_Milos_Resume.pdf', '_blank');
+    });
+});
