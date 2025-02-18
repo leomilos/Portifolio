@@ -25,6 +25,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Gerar PDF do portfólio
     downloadButton.addEventListener("click", function() {
-        window.open('Leonardo_Milos_Resume.pdf', '_blank');
+        let link = document.createElement('a');
+        link.href = 'Leonardo_Milos_Resume.pdf'; // Certifique-se de que o PDF está na pasta correta
+        link.download = 'Leonardo_Milos_Resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     });
 });
