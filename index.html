@@ -1,55 +1,743 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" data-ui="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leonardo Milos - Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leonardo Milos · Dados, operações e infraestrutura</title>
+  <meta name="description" content="Leonardo Milos — desenvolvedor na Sole Capital: engenharia de dados, operações financeiras e infraestrutura.">
+  <meta property="og:title" content="Leonardo Milos">
+  <meta property="og:description" content="Desenvolvedor na Sole Capital — dados, operações financeiras e infraestrutura.">
+  <meta property="og:image" content="profile-photo.jpg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%2315171A'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' fill='%23F5F2EC' text-anchor='middle'%3ELM%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <!-- Aplica idioma e tema antes de pintar a página (evita "piscar") -->
+  <script>
+    (function () {
+      var r = document.documentElement;
+      function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+      var q = new URLSearchParams(location.search).get('lang');
+      var nav = (navigator.language || 'pt').toLowerCase();
+      var lang = q || get('lm-lang') || (nav.indexOf('pt') === 0 ? 'pt' : 'en');
+      lang = lang === 'en' ? 'en' : 'pt';
+      r.setAttribute('data-ui', lang);
+      r.setAttribute('lang', lang === 'en' ? 'en' : 'pt-BR');
+      var t = get('lm-theme');
+      if (t === 'light' || t === 'dark') r.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <style>
+    /* ---------- Tokens ---------- */
+    :root {
+      --paper: #F5F2EC;
+      --surface: #FFFFFF;
+      --ink: #15171A;
+      --ink-2: #464A51;
+      --muted: #676B72;
+      --rule: #DDD7CB;
+      --accent: #A84A14;
+      --accent-soft: #F3E6DA;
+      --chip: #EEEAE2;
+      --btn-ink: #F5F2EC;
+      --shadow: 0 1px 2px rgba(21, 23, 26, .04), 0 8px 24px -12px rgba(21, 23, 26, .12);
+
+      --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+      --wrap: 1180px;
+      --gutter: 32px;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #121315; --surface: #1A1C1F; --ink: #ECE8E1; --ink-2: #BDB8B0; --muted: #918C85;
+        --rule: #2D3034; --accent: #E38D52; --accent-soft: #2B2019; --chip: #222428; --btn-ink: #121315;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --paper: #121315; --surface: #1A1C1F; --ink: #ECE8E1; --ink-2: #BDB8B0; --muted: #918C85;
+      --rule: #2D3034; --accent: #E38D52; --accent-soft: #2B2019; --chip: #222428; --btn-ink: #121315;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+
+    /* ---------- Idioma: mostra só o bloco do idioma ativo ---------- */
+    html[data-ui="pt"] [data-lang="en"],
+    html[data-ui="en"] [data-lang="pt"] { display: none !important; }
+
+    /* ---------- Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color .25s ease, color .25s ease;
+    }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: var(--ink); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    h1, h2, h3, p, ul, dl, dd { margin: 0; }
+    ul { padding: 0; list-style: none; }
+    .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+    .mono { font-family: var(--mono); }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 16px; top: 16px; z-index: 100; background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 8px; }
+
+    /* ---------- Topo ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in srgb, var(--paper) 86%, transparent);
+      backdrop-filter: saturate(1.4) blur(10px);
+      -webkit-backdrop-filter: saturate(1.4) blur(10px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .topbar .wrap { display: flex; align-items: center; gap: 24px; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; font-weight: 500; white-space: nowrap; }
+    .brand-mark {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--ink); color: var(--paper);
+      font-family: var(--serif); font-size: 17px; letter-spacing: .02em;
+    }
+    .nav { display: flex; gap: 4px; margin-left: auto; }
+    .nav a {
+      color: var(--ink-2); text-decoration: none; font-size: 14.5px;
+      padding: 8px 12px; border-radius: 999px;
+      transition: background-color .15s, color .15s;
+    }
+    .nav a:hover { color: var(--ink); background: var(--chip); }
+    .nav a.is-active { color: var(--ink); background: var(--chip); }
+    .controls { display: flex; align-items: center; gap: 8px; }
+    .nav + .controls { margin-left: 8px; }
+    .seg { display: inline-flex; padding: 3px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); }
+    .seg button {
+      font: 500 12.5px/1 var(--mono); letter-spacing: .04em;
+      min-width: 40px; height: 32px; padding: 0 10px;
+      border: 0; border-radius: 999px; cursor: pointer;
+      background: transparent; color: var(--muted);
+    }
+    .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .icon-btn {
+      width: 40px; height: 40px; display: grid; place-items: center;
+      border: 1px solid var(--rule); border-radius: 50%;
+      background: var(--surface); color: var(--ink); cursor: pointer;
+    }
+    .icon-btn:hover { border-color: var(--ink-2); }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .i-sun { display: none; }
+    :root[data-theme="dark"] .i-sun { display: block; }
+    :root[data-theme="dark"] .i-moon { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .i-sun { display: block; }
+      :root:not([data-theme="light"]) .i-moon { display: none; }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 88px 0 96px; }
+    .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 64px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font: 500 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+      color: var(--accent);
+    }
+    .eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor; }
+    .hero h1 {
+      margin-top: 22px;
+      font-family: var(--serif); font-weight: 400;
+      font-size: clamp(64px, 9vw, 124px); line-height: .92; letter-spacing: -.02em;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .role { margin-top: 26px; font-size: 21px; line-height: 1.45; font-weight: 500; max-width: 30ch; }
+    .lede { margin-top: 16px; color: var(--ink-2); max-width: 56ch; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      height: 48px; padding: 0 22px; border-radius: 999px;
+      font-weight: 500; font-size: 15.5px; text-decoration: none;
+      border: 1px solid var(--ink); transition: transform .15s, background-color .15s, color .15s;
+    }
+    .btn svg { width: 16px; height: 16px; }
+    .btn-primary { background: var(--ink); color: var(--btn-ink); }
+    .btn-primary:hover { color: var(--btn-ink); transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--ink); border-color: var(--rule); }
+    .btn-ghost:hover { color: var(--ink); border-color: var(--ink); transform: translateY(-1px); }
+
+    .id-card {
+      background: var(--surface); border: 1px solid var(--rule); border-radius: 24px;
+      padding: 32px; box-shadow: var(--shadow);
+    }
+    .photo {
+      width: 168px; height: 168px; border-radius: 50%; overflow: hidden;
+      outline: 1px solid var(--rule); outline-offset: 6px;
+      margin: 6px auto 28px;
+    }
+    .photo img {
+      display: block; width: 108%; height: 108%; margin: -4%;
+      object-fit: cover; transition: transform .4s ease;
+    }
+    .photo:hover img { transform: scale(1.05); }
+    .facts { display: grid; gap: 0; }
+    .facts div { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding: 12px 0; border-top: 1px solid var(--rule); }
+    .facts dt { font: 500 12px/1.9 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .facts dd { font-size: 15.5px; line-height: 1.5; }
+
+    /* ---------- Faixa tipo "ticker" ---------- */
+    .ticker { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: var(--surface); }
+    .ticker ul {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px;
+      padding: 18px 0;
+      font: 500 13px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+    }
+    .ticker li { display: inline-flex; align-items: center; gap: 16px; }
+    .ticker li + li::before { content: ""; width: 5px; height: 5px; background: var(--accent); border-radius: 1px; }
+
+    /* ---------- Seções ---------- */
+    .section { padding: 88px 0; border-bottom: 1px solid var(--rule); scroll-margin-top: 68px; }
+    .section:last-of-type { border-bottom: 0; }
+    .section .wrap { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 56px; }
+    .sec-head { align-self: start; position: sticky; top: 108px; }
+    .sec-num { font: 500 13px/1 var(--mono); letter-spacing: .08em; color: var(--accent); }
+    .sec-head h2 { margin-top: 14px; font-family: var(--serif); font-weight: 400; font-size: 48px; line-height: 1; letter-spacing: -.01em; }
+    .sec-head p { margin-top: 14px; color: var(--muted); font-size: 15px; max-width: 26ch; }
+
+    .prose p { font-size: 19px; line-height: 1.65; color: var(--ink-2); max-width: 62ch; }
+    .prose p + p { margin-top: 18px; }
+    .prose strong { color: var(--ink); font-weight: 500; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--rule); border-radius: 18px;
+      padding: 28px; display: flex; flex-direction: column; gap: 12px;
+      transition: border-color .2s, transform .2s;
+    }
+    .card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
+    .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .card-idx { font: 500 12.5px/1 var(--mono); color: var(--accent); letter-spacing: .06em; }
+    .card-date { font: 400 12.5px/1.4 var(--mono); color: var(--muted); white-space: nowrap; }
+    .card h3 { font-size: 20px; line-height: 1.3; font-weight: 600; letter-spacing: -.005em; }
+    .card p { color: var(--ink-2); font-size: 15.5px; line-height: 1.6; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+    .tag { font: 400 12px/1 var(--mono); padding: 7px 10px; border-radius: 999px; background: var(--chip); color: var(--ink-2); }
+
+    /* Experiência */
+    .job { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 36px; }
+    .job-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); }
+    .job-head h3 { font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.1; }
+    .job-head h3 .at { color: var(--muted); }
+    .job-meta { font: 500 13px/1.4 var(--mono); color: var(--accent); letter-spacing: .04em; }
+    .job-sub { margin-top: 6px; color: var(--muted); font-size: 15px; width: 100%; }
+    .job-list { margin-top: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 40px; }
+    .job-list li { position: relative; padding-left: 22px; color: var(--ink-2); font-size: 15.5px; line-height: 1.6; }
+    .job-list li::before { content: ""; position: absolute; left: 0; top: .78em; width: 10px; height: 1.5px; background: var(--accent); }
+    .job-list b { color: var(--ink); font-weight: 600; }
+
+    /* Projetos */
+    .group-label { font: 500 12.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
+    .group-label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+    .group + .group { margin-top: 40px; }
+
+    /* Stack */
+    .stack { border-top: 1px solid var(--rule); }
+    .stack-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+    .stack-row dt { font: 500 12.5px/2.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .stack-row dd { display: flex; flex-wrap: wrap; gap: 8px; }
+    .stack-row .tag { font-size: 13.5px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--rule); color: var(--ink); }
+
+    /* Formação + idiomas */
+    .lang-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0; border-top: 1px solid var(--rule); }
+    .lang-row:first-of-type { border-top: 0; padding-top: 0; }
+    .lang-row span:last-child { font: 400 13px/1 var(--mono); color: var(--muted); }
+    .level { display: inline-flex; gap: 4px; margin-left: 10px; vertical-align: middle; }
+    .level i { width: 16px; height: 4px; border-radius: 2px; background: var(--rule); }
+    .level i.on { background: var(--accent); }
+
+
+    /* Contato */
+    .contact { padding: 120px 0 104px; text-align: center; }
+    .contact h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(52px, 8vw, 104px); line-height: .95; letter-spacing: -.02em; }
+    .contact h2 em { color: var(--accent); }
+    .contact p { margin: 20px auto 0; color: var(--ink-2); max-width: 46ch; }
+    .contact .cta { justify-content: center; }
+
+    footer { border-top: 1px solid var(--rule); }
+    footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; height: 76px; font: 400 13px/1 var(--mono); color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    /* ---------- Responsivo ---------- */
+    @media (max-width: 1080px) {
+      .nav { display: none; }
+      .controls, .nav + .controls { margin-left: auto; }
+      .section .wrap { grid-template-columns: 1fr; gap: 32px; }
+      .sec-head { position: static; }
+      .sec-head p { max-width: 48ch; }
+    }
+    @media (max-width: 860px) {
+      .hero { padding: 56px 0 64px; }
+      .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+      .job-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      :root { --gutter: 20px; }
+      body { font-size: 16px; }
+      .topbar .wrap { height: 60px; gap: 12px; }
+      .brand-name { display: none; }
+      .section { padding: 64px 0; scroll-margin-top: 60px; }
+      .sec-head h2 { font-size: 40px; }
+      .prose p { font-size: 17px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .card, .job, .id-card { padding: 24px; border-radius: 16px; }
+      .job-head h3 { font-size: 28px; }
+      .stack-row { grid-template-columns: 1fr; gap: 10px; }
+      .stack-row dt { line-height: 1.4; }
+      .facts div { grid-template-columns: 96px 1fr; }
+      .ticker ul { justify-content: flex-start; gap: 10px 12px; font-size: 12px; }
+      .ticker li { gap: 12px; }
+      .contact { padding: 80px 0 72px; }
+      footer .wrap { flex-direction: column; justify-content: center; height: auto; padding-top: 24px; padding-bottom: 24px; }
+    }
+  </style>
 </head>
 <body>
-    
-    <div class="container">
-        <div class="profile-image">
-            <img src="images/foto_perfil.jpg" alt="Minha Foto">
+  <a class="skip" href="#conteudo"><span data-lang="pt">Pular para o conteúdo</span><span data-lang="en">Skip to content</span></a>
+
+  <!-- ============ TOPO ============ -->
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#topo" aria-label="Leonardo Milos">
+        <span class="brand-mark" aria-hidden="true">LM</span>
+        <span class="brand-name">Leonardo Milos</span>
+      </a>
+      <nav class="nav" aria-label="Seções">
+        <a href="#sobre"><span data-lang="pt">Sobre</span><span data-lang="en">About</span></a>
+        <a href="#atuacao"><span data-lang="pt">Atuação</span><span data-lang="en">Focus</span></a>
+        <a href="#experiencia"><span data-lang="pt">Experiência</span><span data-lang="en">Experience</span></a>
+        <a href="#projetos"><span data-lang="pt">Projetos</span><span data-lang="en">Projects</span></a>
+        <a href="#stack">Stack</a>
+        <a href="#formacao"><span data-lang="pt">Formação</span><span data-lang="en">Education</span></a>
+        <a href="#contato"><span data-lang="pt">Contato</span><span data-lang="en">Contact</span></a>
+      </nav>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Idioma / Language">
+          <button type="button" data-set-lang="pt" aria-pressed="true">PT</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
         </div>
-        
-        <h1>Leonardo Milos</h1>
-        <h2>Developer</h2>
-        <p class="contact">
-            📧 <a href="mailto:leomilos21@gmail.com">leomilos21@gmail.com</a> | 📞 +55(11)94656-1112<br>
-            📍 São Paulo, SP, Brazil | <a href="https://www.linkedin.com/in/leonardo-pilati-milos-6a13b322b/">LinkedIn</a> | <a href="https://github.com/leomilos">GitHub</a>
-        </p>
-        <div class="controls">
-            <label for="themeColor">Choose Theme Color:</label>
-            <input type="color" id="themeColor">
-            <button id="downloadResume">Download Resume</button>
-        </div>
-        
-        <button class="toggle-dark-mode" onclick="toggleDarkMode()">Toggle Dark Mode</button>
-        
-        <div class="section">
-            <h2>Professional Experience</h2>
-            <ul>
-                <li>Create, develop, and support SQL databases.</li>
-                <li>Process and analyze market data.</li>
-                <li>Develop API post/request.</li>
-                <li>Manage Docker environments.</li>
-                <li>Automate workflows with Apache Airflow.</li>
-                <li>Develop trading bots and automated financial reports.</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>Skills</h2>
-            <ul>
-                <li>Python, C++, C, C#, SQL, HTML+CSS</li>
-                <li>Work under pressure</li>
-                <li>Adaptability</li>
-                <li>Teamwork</li>
-            </ul>
-        </div>
+        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Alternar tema claro/escuro">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        </button>
+      </div>
     </div>
-    
-    <script src="script.js"></script>
+  </header>
+
+  <main id="conteudo">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="topo">
+      <div class="wrap">
+        <div>
+          <span class="eyebrow"><span data-lang="pt">Sole Capital · desde 2019</span><span data-lang="en">Sole Capital · since 2019</span></span>
+          <h1>Leonardo <em>Milos</em></h1>
+          <p class="role">
+            <span data-lang="pt">Desenvolvedor — dados, operações financeiras e infraestrutura.</span>
+            <span data-lang="en">Developer — data, financial operations and infrastructure.</span>
+          </p>
+          <p class="lede" data-lang="pt">Na Sole Capital, gestora de investimentos, trabalho da execução e conciliação de ordens aos pipelines de dados, relatórios financeiros e à infraestrutura das APIs e dashboards internos.</p>
+          <p class="lede" data-lang="en">At Sole Capital, an investment management firm, I work across order execution and reconciliation, data pipelines, financial reporting and the infrastructure behind our internal APIs and dashboards.</p>
+          <div class="cta">
+            <a class="btn btn-primary" href="https://www.linkedin.com/in/leonardo-pilati-milos-6a13b322b/" target="_blank" rel="noopener">
+              LinkedIn
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/leomilos" target="_blank" rel="noopener">
+              GitHub
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="pdf/Leonardo_Milos_Resume.pdf" target="_blank" rel="noopener">
+              <span data-lang="pt">Currículo (PDF)</span><span data-lang="en">Resume (PDF)</span>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <aside class="id-card" aria-label="Resumo">
+          <div class="photo"><img src="profile-photo.jpg" alt="Foto de Leonardo Milos" width="283" height="286"></div>
+          <dl class="facts">
+            <div>
+              <dt><span data-lang="pt">Atuação</span><span data-lang="en">Focus</span></dt>
+              <dd><span data-lang="pt">Dados · Operações · Infraestrutura</span><span data-lang="en">Data · Operations · Infrastructure</span></dd>
+            </div>
+            <div>
+              <dt><span data-lang="pt">Empresa</span><span data-lang="en">Company</span></dt>
+              <dd><span data-lang="pt">Sole Capital, desde 10.2019</span><span data-lang="en">Sole Capital, since 10.2019</span></dd>
+            </div>
+            <div>
+              <dt><span data-lang="pt">Formação</span><span data-lang="en">Degree</span></dt>
+              <dd><span data-lang="pt">Ciência da Computação — FEI</span><span data-lang="en">B.Sc. Computer Science — FEI</span></dd>
+            </div>
+            <div>
+              <dt><span data-lang="pt">Idiomas</span><span data-lang="en">Languages</span></dt>
+              <dd><span data-lang="pt">Português · Inglês</span><span data-lang="en">Portuguese · English</span></dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ FAIXA ============ -->
+    <div class="ticker" aria-hidden="true">
+      <div class="wrap">
+        <ul>
+          <li>Python</li><li>SQL</li><li>PostgreSQL</li><li>Airflow</li><li>FastAPI</li><li>Linux</li><li>B3</li><li>FIIs</li><li>ANBIMA</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 01 SOBRE ============ -->
+    <section class="section" id="sobre">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">01</div>
+          <h2><span data-lang="pt">Sobre</span><span data-lang="en">About</span></h2>
+        </header>
+        <div class="prose">
+          <div data-lang="pt">
+            <p>Sou desenvolvedor na <strong>Sole Capital</strong> desde outubro de 2019. Meu trabalho junta três frentes: <strong>operações financeiras</strong>, <strong>engenharia de dados</strong> e <strong>administração de sistemas</strong>.</p>
+            <p>No dia a dia isso significa executar e conciliar ordens em contas de clientes, montar o DRE e outros relatórios, manter os pipelines que trazem dados de corretoras, da B3 e da ANBIMA, e cuidar das VMs onde rodam nossas APIs e dashboards.</p>
+            <p>Gosto de criar soluções de software e otimizar processos — hoje, isso inclui organizar os projetos da casa em repositórios próprios, com um padrão único e um só ponto de acesso ao banco de dados.</p>
+          </div>
+          <div data-lang="en">
+            <p>I've been a developer at <strong>Sole Capital</strong> since October 2019. My work brings together three areas: <strong>financial operations</strong>, <strong>data engineering</strong> and <strong>systems administration</strong>.</p>
+            <p>Day to day, that means executing and reconciling orders across client accounts, building the income statement (DRE) and other reports, maintaining the pipelines that bring in data from brokers, B3 and ANBIMA, and running the VMs behind our APIs and dashboards.</p>
+            <p>I enjoy building software solutions and optimizing processes — lately that includes organizing our projects into their own repositories, with one shared standard and a single point of access to the database.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 ATUAÇÃO ============ -->
+    <section class="section" id="atuacao">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">02</div>
+          <h2><span data-lang="pt">Atuação</span><span data-lang="en">Focus</span></h2>
+          <p><span data-lang="pt">As quatro frentes que ocupam a maior parte da minha semana.</span><span data-lang="en">The four areas that take up most of my week.</span></p>
+        </header>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-top"><span class="card-idx">A</span></div>
+            <h3><span data-lang="pt">Operações e execução</span><span data-lang="en">Trading operations</span></h3>
+            <p data-lang="pt">Execução e conciliação de ordens em contas de clientes, com fluxos de FIIs e ações e integração com as corretoras XP e BTG.</p>
+            <p data-lang="en">Order execution and reconciliation across client accounts, covering real estate fund (FII) and equity workflows, integrated with the XP and BTG brokers.</p>
+            <div class="tags"><span class="tag">FIIs</span><span class="tag"><span data-lang="pt">Ações</span><span data-lang="en">Equities</span></span><span class="tag">XP</span><span class="tag">BTG</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="card-idx">B</span></div>
+            <h3><span data-lang="pt">Engenharia de dados</span><span data-lang="en">Data engineering</span></h3>
+            <p data-lang="pt">Pipelines em Python orquestrados com Airflow, bancos PostgreSQL de dados de mercado e patrimônio, e o reporte de carteiras à ANBIMA.</p>
+            <p data-lang="en">Python pipelines orchestrated with Airflow, PostgreSQL databases for market and wealth data, and portfolio reporting to ANBIMA.</p>
+            <div class="tags"><span class="tag">Python</span><span class="tag">Airflow</span><span class="tag">PostgreSQL</span><span class="tag">ANBIMA</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="card-idx">C</span></div>
+            <h3><span data-lang="pt">Infraestrutura</span><span data-lang="en">Infrastructure</span></h3>
+            <p data-lang="pt">VMs Ubuntu com serviços em systemd, proxy reverso com Caddy, APIs em FastAPI e dashboards em Dash e Streamlit.</p>
+            <p data-lang="en">Ubuntu VMs running systemd services, Caddy as reverse proxy, FastAPI services and Dash and Streamlit dashboards.</p>
+            <div class="tags"><span class="tag">Ubuntu</span><span class="tag">systemd</span><span class="tag">Caddy</span><span class="tag">FastAPI</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="card-idx">D</span></div>
+            <h3><span data-lang="pt">Relatórios financeiros</span><span data-lang="en">Financial reporting</span></h3>
+            <p data-lang="pt">DRE organizado por área de negócio, validação de PnL e automação de faturamento.</p>
+            <p data-lang="en">Income statement (DRE) organized by business area, PnL validation and billing automation.</p>
+            <div class="tags"><span class="tag">DRE</span><span class="tag">PnL</span><span class="tag"><span data-lang="pt">Faturamento</span><span data-lang="en">Billing</span></span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 EXPERIÊNCIA ============ -->
+    <section class="section" id="experiencia">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">03</div>
+          <h2><span data-lang="pt">Experiência</span><span data-lang="en">Experience</span></h2>
+        </header>
+        <article class="job">
+          <div class="job-head">
+            <h3><span data-lang="pt">Desenvolvedor</span><span data-lang="en">Developer</span> <span class="at">· Sole Capital</span></h3>
+            <div class="job-meta"><span data-lang="pt">10.2019 — atual</span><span data-lang="en">10.2019 — present</span></div>
+            <p class="job-sub"><span data-lang="pt">Gestora de investimentos</span><span data-lang="en">Investment management firm</span></p>
+          </div>
+          <ul class="job-list" data-lang="pt">
+            <li><b>Execução e conciliação</b> de ordens em contas de clientes, incluindo ordens de FIIs em vários dias via robô de execução.</li>
+            <li><b>Coleta de dados das corretoras</b> — posições e movimentações pelas APIs da XP e do BTG.</li>
+            <li><b>Bancos de dados SQL</b>: criação, desenvolvimento e suporte, com dados de mercado da B3 e de patrimônio em PostgreSQL.</li>
+            <li><b>Reporte à ANBIMA</b> das carteiras administradas, com pipeline automatizado.</li>
+            <li><b>Infraestrutura interna</b>: VMs Ubuntu, APIs em FastAPI e dashboards em Dash e Streamlit.</li>
+            <li><b>Relatórios financeiros</b>: DRE por área de negócio e validação de PnL.</li>
+            <li><b>Dados de mercado</b>: processamento e análise, e desenvolvimento de estratégias e análises de mercado.</li>
+            <li><b>Padronização do código</b>: migração dos projetos para o GitHub, um repositório por projeto.</li>
+          </ul>
+          <ul class="job-list" data-lang="en">
+            <li><b>Order execution and reconciliation</b> across client accounts, including multi-day FII orders through an execution robot.</li>
+            <li><b>Broker data collection</b> — positions and transactions from the XP and BTG APIs.</li>
+            <li><b>SQL databases</b>: design, development and support, with B3 market data and wealth data in PostgreSQL.</li>
+            <li><b>ANBIMA reporting</b> for managed portfolios, through an automated pipeline.</li>
+            <li><b>Internal infrastructure</b>: Ubuntu VMs, FastAPI services and Dash and Streamlit dashboards.</li>
+            <li><b>Financial reporting</b>: income statement (DRE) by business area and PnL validation.</li>
+            <li><b>Market data</b>: processing and analysis, plus strategy development and market analysis.</li>
+            <li><b>Code standards</b>: migrating our projects to GitHub, one repository per project.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ 04 PROJETOS ============ -->
+    <section class="section" id="projetos">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">04</div>
+          <h2><span data-lang="pt">Projetos</span><span data-lang="en">Projects</span></h2>
+        </header>
+        <div>
+          <div class="group">
+            <h3 class="group-label"><span data-lang="pt">Na Sole Capital</span><span data-lang="en">At Sole Capital</span></h3>
+            <div class="grid-2">
+              <article class="card">
+                <h3><span data-lang="pt">Coleta de dados de corretoras</span><span data-lang="en">Broker data collection</span></h3>
+                <p data-lang="pt">Serviços em Python que buscam posições e movimentações nas APIs da XP e do BTG (via webhook) e gravam tudo no PostgreSQL.</p>
+                <p data-lang="en">Python services that pull positions and transactions from the XP and BTG APIs (via webhook) and store them in PostgreSQL.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">APIs</span><span class="tag">Webhook</span><span class="tag">PostgreSQL</span></div>
+              </article>
+              <article class="card">
+                <h3><span data-lang="pt">Pipeline ANBIMA</span><span data-lang="en">ANBIMA pipeline</span></h3>
+                <p data-lang="pt">Gera os arquivos de carteiras administradas enviados à ANBIMA, com validação de schema em Pydantic v2.</p>
+                <p data-lang="en">Builds the managed-portfolio files submitted to ANBIMA, with schema validation in Pydantic v2.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">Pydantic</span><span class="tag">ANBIMA</span></div>
+              </article>
+              <article class="card">
+                <h3><span data-lang="pt">Biblioteca de acesso a dados</span><span data-lang="en">Data access library</span></h3>
+                <p data-lang="pt">Biblioteca Python interna que centraliza a conexão com o banco para todos os projetos — o único ponto a trocar se o banco mudar.</p>
+                <p data-lang="en">An internal Python library that centralizes the database connection for every project — the one place to change if the database moves.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">PostgreSQL</span><span class="tag"><span data-lang="pt">Biblioteca</span><span data-lang="en">Library</span></span></div>
+              </article>
+              <article class="card">
+                <h3><span data-lang="pt">Dashboards e sinais de trade</span><span data-lang="en">Dashboards and trade signals</span></h3>
+                <p data-lang="pt">App em Dash/Plotly de volatilidade da B3 e uma API em FastAPI que recebe sinais de trade, com um bot do Telegram como canal alternativo.</p>
+                <p data-lang="en">A Dash/Plotly app for B3 volatility analysis and a FastAPI service that receives trade signals, with a Telegram bot as a backup channel.</p>
+                <div class="tags"><span class="tag">Dash</span><span class="tag">Plotly</span><span class="tag">FastAPI</span><span class="tag">Telegram</span></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-label"><span data-lang="pt">Acadêmicos · Centro Universitário FEI</span><span data-lang="en">Academic · Centro Universitário FEI</span></h3>
+            <div class="grid-2">
+              <article class="card">
+                <div class="card-top"><span class="card-date">06.2019 — 10.2020</span></div>
+                <h3><span data-lang="pt">Projeto de realidade virtual</span><span data-lang="en">Virtual reality project</span></h3>
+                <p data-lang="pt">Desenvolvimento de um projeto de realidade virtual em C# e C++.</p>
+                <p data-lang="en">Developed a virtual reality project using C# and C++.</p>
+                <div class="tags"><span class="tag">C#</span><span class="tag">C++</span><span class="tag">VR</span></div>
+              </article>
+              <article class="card">
+                <div class="card-top"><span class="card-date">06.2016 — 06.2019</span></div>
+                <h3><span data-lang="pt">Maratona de Programação</span><span data-lang="en">Programming Marathon</span></h3>
+                <p data-lang="pt">Otimização de código em C++ e participação na etapa nacional da competição (2017).</p>
+                <p data-lang="en">Optimized code in C++ and took part in the national competition (2017).</p>
+                <div class="tags"><span class="tag">C++</span><span class="tag"><span data-lang="pt">Algoritmos</span><span data-lang="en">Algorithms</span></span></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 05 STACK ============ -->
+    <section class="section" id="stack">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">05</div>
+          <h2>Stack</h2>
+          <p><span data-lang="pt">Linguagens e ferramentas que uso no trabalho.</span><span data-lang="en">Languages and tools I use at work.</span></p>
+        </header>
+        <dl class="stack">
+          <div class="stack-row">
+            <dt><span data-lang="pt">Linguagens</span><span data-lang="en">Languages</span></dt>
+            <dd><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">C++</span><span class="tag">C</span><span class="tag">C#</span><span class="tag">HTML &amp; CSS</span></dd>
+          </div>
+          <div class="stack-row">
+            <dt><span data-lang="pt">Dados</span><span data-lang="en">Data</span></dt>
+            <dd><span class="tag">PostgreSQL</span><span class="tag">Airflow</span><span class="tag">Pydantic</span><span class="tag">Dash / Plotly</span><span class="tag">Streamlit</span></dd>
+          </div>
+          <div class="stack-row">
+            <dt><span data-lang="pt">Infra</span><span data-lang="en">Infra</span></dt>
+            <dd><span class="tag">Linux (Ubuntu)</span><span class="tag">systemd</span><span class="tag">Docker</span><span class="tag">Caddy</span><span class="tag">FastAPI</span><span class="tag">Git &amp; GitHub</span></dd>
+          </div>
+          <div class="stack-row">
+            <dt><span data-lang="pt">Mercado</span><span data-lang="en">Markets</span></dt>
+            <dd><span class="tag">B3</span><span class="tag">FIIs</span><span class="tag"><span data-lang="pt">Ações</span><span data-lang="en">Equities</span></span></dd>
+          </div>
+          <div class="stack-row">
+            <dt><span data-lang="pt">Integrações</span><span data-lang="en">Integrations</span></dt>
+            <dd><span class="tag">XP</span><span class="tag">BTG</span><span class="tag">ANBIMA</span></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============ 06 FORMAÇÃO ============ -->
+    <section class="section" id="formacao">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">06</div>
+          <h2><span data-lang="pt">Formação e idiomas</span><span data-lang="en">Education &amp; languages</span></h2>
+        </header>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-top"><span class="card-idx"><span data-lang="pt">Graduação</span><span data-lang="en">Degree</span></span><span class="card-date">02.2017 — 12.2020</span></div>
+            <h3><span data-lang="pt">Bacharelado em Ciência da Computação</span><span data-lang="en">Bachelor's Degree in Computer Science</span></h3>
+            <p>Centro Universitário FEI</p>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="card-idx"><span data-lang="pt">Idiomas</span><span data-lang="en">Languages</span></span></div>
+            <div>
+              <div class="lang-row">
+                <span><span data-lang="pt">Português</span><span data-lang="en">Portuguese</span><span class="level" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span>
+                <span><span data-lang="pt">Fluente</span><span data-lang="en">Fluent</span></span>
+              </div>
+              <div class="lang-row">
+                <span><span data-lang="pt">Inglês</span><span data-lang="en">English</span><span class="level" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span>
+                <span><span data-lang="pt">Avançado</span><span data-lang="en">Advanced</span></span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 07 REFERÊNCIAS ============ -->
+    <section class="section" id="referencias">
+      <div class="wrap">
+        <header class="sec-head">
+          <div class="sec-num">07</div>
+          <h2><span data-lang="pt">Referências</span><span data-lang="en">References</span></h2>
+          <p><span data-lang="pt">Contatos disponíveis sob solicitação.</span><span data-lang="en">Contact details available on request.</span></p>
+        </header>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-top"><span class="card-idx">Centro Universitário FEI</span></div>
+            <h3>Prof. Guilherme Wachs Lopes</h3>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="card-idx">Sole Capital</span></div>
+            <h3>Ricardo de Figueiredo Radaeli</h3>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTATO ============ -->
+    <section class="contact" id="contato">
+      <div class="wrap">
+        <div class="sec-num"><span data-lang="pt">Contato</span><span data-lang="en">Contact</span></div>
+        <h2 style="margin-top:18px"><span data-lang="pt">Vamos <em>conversar</em>.</span><span data-lang="en">Let's <em>talk</em>.</span></h2>
+        <p data-lang="pt">O jeito mais rápido de falar comigo é pelo LinkedIn. Meu código público fica no GitHub e o currículo completo, no PDF.</p>
+        <p data-lang="en">The quickest way to reach me is on LinkedIn. My public code lives on GitHub, and my full resume is in the PDF.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://www.linkedin.com/in/leonardo-pilati-milos-6a13b322b/" target="_blank" rel="noopener">
+            LinkedIn
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/leomilos" target="_blank" rel="noopener">
+            github.com/leomilos
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="pdf/Leonardo_Milos_Resume.pdf" target="_blank" rel="noopener">
+            <span data-lang="pt">Currículo (PDF)</span><span data-lang="en">Resume (PDF)</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="ano">2026</span> Leonardo Milos</span>
+      <a href="#topo"><span data-lang="pt">Voltar ao topo ↑</span><span data-lang="en">Back to top ↑</span></a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+      /* ---- Idioma ---- */
+      var titles = {
+        pt: 'Leonardo Milos · Dados, operações e infraestrutura',
+        en: 'Leonardo Milos · Data, operations and infrastructure'
+      };
+      var langButtons = document.querySelectorAll('[data-set-lang]');
+      function applyLang(lang) {
+        root.setAttribute('data-ui', lang);
+        root.setAttribute('lang', lang === 'en' ? 'en' : 'pt-BR');
+        document.title = titles[lang];
+        langButtons.forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.getAttribute('data-set-lang') === lang));
+        });
+      }
+      langButtons.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var lang = b.getAttribute('data-set-lang');
+          applyLang(lang);
+          set('lm-lang', lang);
+        });
+      });
+      applyLang(root.getAttribute('data-ui') === 'en' ? 'en' : 'pt');
+
+      /* ---- Tema claro/escuro ---- */
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      function isDark() {
+        var t = root.getAttribute('data-theme');
+        return t ? t === 'dark' : mq.matches;
+      }
+      document.getElementById('theme-toggle').addEventListener('click', function () {
+        var next = isDark() ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        set('lm-theme', next);
+      });
+
+      /* ---- Destaca no menu a seção visível ---- */
+      var links = {};
+      document.querySelectorAll('.nav a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting && links[e.target.id]) {
+              Object.keys(links).forEach(function (k) { links[k].classList.remove('is-active'); });
+              links[e.target.id].classList.add('is-active');
+            }
+          });
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+      }
+
+      document.getElementById('ano').textContent = new Date().getFullYear();
+    })();
+  </script>
 </body>
 </html>
